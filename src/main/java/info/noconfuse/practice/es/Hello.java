@@ -171,7 +171,17 @@ public class Hello {
                 System.out.println("_source: " + hit.getSourceAsString());
             }
 
+            // count
+            SearchResponse count = client.prepareSearch("us")
+                    .setTypes("tweet")
+                    .setFrom(0)
+                    .setSize(0)
+                    .execute()
+                    .actionGet();
+            System.out.println("count: " + count.getHits().totalHits());
+
             client.close();
         }
     }
+
 }
