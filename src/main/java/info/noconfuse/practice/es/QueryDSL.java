@@ -209,4 +209,36 @@ public class QueryDSL {
             client.close();
         }
     }
+
+    private static class SpanQueries {
+
+        public static void main(String[] args) {
+            Client client = getClient();
+
+            QueryBuilder spanTerm = spanTermQuery("tweet", "elasticsearch");
+            printResponse(search(client, spanTerm));
+
+            QueryBuilder spanMultiTerm = spanMultiTermQueryBuilder(
+                    prefixQuery("tweet", "elastic")
+            );
+            printResponse(search(client, spanMultiTerm));
+
+            QueryBuilder spanFirst = spanFirstQuery(
+                    spanTermQuery("tweet", "elasticsearch"),
+                    1
+            );
+            printResponse(search(client, spanFirst));
+
+            QueryBuilder spanNear = spanNearQuery()
+                    .clause(spanTermQuery("tweet", "elasticsearch"))
+                    .clause(spanTermQuery("tweet", "I"))
+                    .clause(spanTermQuery("tweet", "love"))
+                    .slop(12)
+                    .inOrder(false)
+                    .collectPayloads(false);
+            printResponse(search(client, spanNear));
+
+            client.close();
+        }
+    }
 }
