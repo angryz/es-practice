@@ -95,4 +95,41 @@ public class QueryDSL {
         }
     }
 
+    private static class TermLevelSearch {
+
+        public static void main(String[] args) {
+            Client client = getClient();
+
+            QueryBuilder term = QueryBuilders.termQuery("tweet", "elasticsearch");
+            printResponse(search(client, term));
+
+            QueryBuilder terms = QueryBuilders.termsQuery("tweet", "elasticsearch", "mary");
+            printResponse(search(client, terms));
+
+            QueryBuilder range = QueryBuilders.rangeQuery("date")
+                    .from("2014-09-20")
+                    .to("2014-09-24")
+                    .includeLower(true)
+                    .includeUpper(false);
+            // a simplified form
+            //QueryBuilders.rangeQuery("date").gte("2014-09-20").lt("2014-09-24");
+            printResponse(search(client, range));
+
+            QueryBuilder exists = QueryBuilders.existsQuery("tweet");
+            printResponse(search(client, exists));
+
+            // missing query is deprecated in 2.2.0
+            QueryBuilder missing = QueryBuilders.missingQuery("tweet")
+                    .existence(true)
+                    .nullValue(true);
+            printResponse(search(client, missing));
+
+            // instead of missing query
+            QueryBuilder missingInstead = QueryBuilders.boolQuery().mustNot(
+                    QueryBuilders.existsQuery("tweet"));
+            printResponse(search(client, missingInstead));
+
+            client.close();
+        }
+    }
 }
