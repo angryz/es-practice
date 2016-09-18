@@ -186,6 +186,26 @@ public class QueryDSL {
                     );
             printResponse(search(client, functionScore));
 
+            QueryBuilder boosting = boostingQuery()
+                    .positive(termQuery("tweet", "elasticsearch"))
+                    .negative(termQuery("tweet", "love"))
+                    .negativeBoost(0.4f);
+            printResponse(search(client, boosting));
+
+            QueryBuilder indices = indicesQuery(
+                    termQuery("tweet", "elasticsearch"),
+                    "us", "megacrop"
+            ).noMatchQuery(termQuery("about", "love"));
+            System.out.println("\n>>>> Start searching => " + indices.toString());
+            SearchResponse response = client.prepareSearch("us", "megacrop")
+                    .setQuery(indices)
+                    .setFrom(0)
+                    .setSize(20)
+                    .setExplain(true)
+                    .execute()
+                    .actionGet();
+            printResponse(response);
+
             client.close();
         }
     }
