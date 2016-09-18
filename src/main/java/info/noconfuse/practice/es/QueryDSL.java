@@ -6,10 +6,13 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.search.SearchHit;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * @author Zheng Zhipeng
@@ -147,6 +150,41 @@ public class QueryDSL {
             QueryBuilder ids = QueryBuilders.idsQuery("tweet")
                     .addIds("4", "12");
             printResponse(search(client, ids));
+
+            client.close();
+        }
+    }
+
+    private static class CompoundQueries {
+
+        public static void main(String[] args) {
+            Client client = getClient();
+
+            QueryBuilder constantScore = constantScoreQuery(
+                    termQuery("tweet", "elasticsearch")
+            ).boost(2.0f);
+            printResponse(search(client, constantScore));
+
+            QueryBuilder bool = boolQuery()
+                    .must(termQuery("tweet", "elasticsearch"))
+                    .must(rangeQuery("date").gte("2014-09-10"))
+                    .mustNot(termQuery("tweet", "love"))
+                    .should(termQuery("tweet", "API"));
+            printResponse(search(client, bool));
+
+            QueryBuilder disMax = disMaxQuery()
+                    .add(termQuery("tweet", "elasticsearch"))
+                    .add(termQuery("tweet", "mary"))
+                    .boost(1.2f)
+                    .tieBreaker(0.7f);
+            printResponse(search(client, disMax));
+
+            QueryBuilder functionScore = functionScoreQuery()
+                    .add(
+                            matchQuery("tweet", "elasticsearch"),
+                            ScoreFunctionBuilders.randomFunction("ABCDEF")
+                    );
+            printResponse(search(client, functionScore));
 
             client.close();
         }
