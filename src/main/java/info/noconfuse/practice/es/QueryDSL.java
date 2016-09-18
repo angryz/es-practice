@@ -129,6 +129,25 @@ public class QueryDSL {
                     QueryBuilders.existsQuery("tweet"));
             printResponse(search(client, missingInstead));
 
+            QueryBuilder prefix = QueryBuilders.prefixQuery("tweet", "elastic");
+            printResponse(search(client, prefix));
+
+            QueryBuilder wildcard = QueryBuilders.wildcardQuery("tweet", "el?st*");
+            printResponse(search(client, wildcard));
+
+            QueryBuilder regexp = QueryBuilders.regexpQuery("tweet", "el.*ch");
+            printResponse(search(client, regexp));
+
+            QueryBuilder fuzzy = QueryBuilders.fuzzyQuery("tweet", "elasticseargh");
+            printResponse(search(client, fuzzy));
+
+            QueryBuilder type = QueryBuilders.typeQuery("tweet");
+            printResponse(search(client, type));
+
+            QueryBuilder ids = QueryBuilders.idsQuery("tweet")
+                    .addIds("4", "12");
+            printResponse(search(client, ids));
+
             client.close();
         }
     }
