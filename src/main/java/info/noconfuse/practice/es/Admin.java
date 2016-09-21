@@ -1,12 +1,10 @@
 package info.noconfuse.practice.es;
 
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.io.stream.BytesStreamOutput;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
 import java.net.InetAddress;
@@ -35,8 +33,23 @@ public class Admin {
             AdminClient adminClient = client.admin(); // admin() method returns an AdminClient
             IndicesAdminClient iClient = adminClient.indices();
 
+            // delete indices
+            if (iClient.prepareExists("twitter").get().isExists())
+                iClient.prepareDelete("twitter").get();
+            if (iClient.prepareExists("twitter-1").get().isExists())
+                iClient.prepareDelete("twitter-1").get();
+
             // create index
             iClient.prepareCreate("twitter").get();
+            System.out.println("Index 'twitter' created.");
+
+            // index settings
+            iClient.prepareCreate("twitter-1")
+                    .setSettings(Settings.builder()
+                            .put("index.number_of_shards", 3)
+                            .put("index.number_of_replicas", 2))
+                    .get();
+            System.out.println("Index 'twitter-1' created.");
 
             client.close();
         }
