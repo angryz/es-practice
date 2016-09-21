@@ -38,6 +38,8 @@ public class Admin {
                 iClient.prepareDelete("twitter").get();
             if (iClient.prepareExists("twitter-1").get().isExists())
                 iClient.prepareDelete("twitter-1").get();
+            if (iClient.prepareExists("twitter-2").get().isExists())
+                iClient.prepareDelete("twitter-2").get();
 
             // create index
             iClient.prepareCreate("twitter").get();
@@ -50,6 +52,20 @@ public class Admin {
                             .put("index.number_of_replicas", 2))
                     .get();
             System.out.println("Index 'twitter-1' created.");
+
+            // PUT mapping
+            iClient.prepareCreate("twitter-2")
+                    .addMapping("tweet", "{\n" +
+                            "  \"tweet\":{\n" +
+                            "    \"properties\":{\n" +
+                            "      \"message\":{\n" +
+                            "        \"type\":\"string\"\n" +
+                            "      }\n" +
+                            "    }\n" +
+                            "  }\n" +
+                            "}")
+                    .get();
+            System.out.println("Index 'twitter-2' created.");
 
             client.close();
         }
